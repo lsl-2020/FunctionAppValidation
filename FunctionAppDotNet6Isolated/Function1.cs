@@ -1,6 +1,8 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
+using System.Diagnostics;
+
 namespace FunctionAppDotNet6Isolated
 {
     public class Function1
@@ -13,10 +15,16 @@ namespace FunctionAppDotNet6Isolated
         }
 
         [Function("Function1")]
-        public void Run([TimerTrigger("0 */5 * * * *")] MyInfo myTimer)
+        public async Task RunAsync([TimerTrigger("0 */5 * * * *", RunOnStartup = true)] MyInfo myTimer)
         {
-            _logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-            _logger.LogInformation($"Next timer schedule at: {myTimer.ScheduleStatus.Next}");
+            _logger.LogInformation("C# Timer trigger function executed at: {CurrentDateTime}", DateTime.Now);
+            _logger.LogInformation("Next timer schedule at: {NextScheduledTime}", myTimer.ScheduleStatus.Next);
+            _logger.LogInformation("Current trace Id: {CurrentTraceId}", Activity.Current?.Id);
+
+            using HttpClient client = new();
+            Task<string> stringTask = client.GetStringAsync("https://www.bing.com/");
+            string response = await stringTask;
+            Console.WriteLine($"HTTP Response: {response.Substring(0, 255)}");
         }
     }
 

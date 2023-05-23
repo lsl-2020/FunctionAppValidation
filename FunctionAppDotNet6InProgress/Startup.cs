@@ -1,12 +1,21 @@
+﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
+using OpenTelemetry;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-var host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults(builder =>
+using System;
+
+[assembly: FunctionsStartup(typeof(FunctionAppDotNet6InProgress.Startup))]
+
+namespace FunctionAppDotNet6InProgress
+{
+    public class Startup : FunctionsStartup
     {
-        builder.Services.AddOpenTelemetry()
+        public override void Configure(IFunctionsHostBuilder builder)
+        {
+            builder.Services.AddOpenTelemetry()
                 .WithTracing(builder =>
                 {
                     // Ensure the TracerProvider subscribes to any custom ActivitySources.
@@ -17,7 +26,8 @@ var host = new HostBuilder()
                         .AddAspNetCoreInstrumentation()
                         .AddConsoleExporter();
                 });
-    })
-    .Build();
 
-host.Run();
+            Console.WriteLine("********************** Executed");
+        }
+    }
+}
