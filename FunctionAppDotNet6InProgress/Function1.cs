@@ -1,10 +1,10 @@
+using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Logging;
+
 using System;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
-
-using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging;
 
 namespace FunctionAppDotNet6InProgress
 {
