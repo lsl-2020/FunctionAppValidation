@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 
 namespace FunctionAppDotNet6InProgress
 {
-    public class Function1
+    public class TimerTriggeredFunction1
     {
-        [FunctionName("Function1")]
+        [Disable]
+        [FunctionName("TimerTriggeredFunction1")]
         public static async Task RunAsync([TimerTrigger("0 */5 * * * *", RunOnStartup = true)] TimerInfo myTimer, ILogger log)
         {
             log.LogInformation("C# Timer trigger function executed at: {CurrentDateTime}", DateTime.Now);

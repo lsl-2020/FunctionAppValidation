@@ -21,6 +21,7 @@ namespace FunctionAppDotNet6InProgress
                         .AddAspNetCoreInstrumentation()
                         .AddConsoleExporter();
                 });
+            AspnetcoreEventSourceListener.CreateConsoleLogger();
         }
     }
 }
