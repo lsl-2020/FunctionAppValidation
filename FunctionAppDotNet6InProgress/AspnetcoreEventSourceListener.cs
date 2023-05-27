@@ -1,7 +1,12 @@
 ﻿// Ignore Spelling: Aspnetcore
 
+using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.ObjectPool;
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Linq;
@@ -47,7 +52,31 @@ namespace FunctionAppDotNet6InProgress
             //if (eventSource.Name == "Microsoft.AspNetCore.Hosting")
             //if (eventSource.Name == "System.Net.Http")
             {
-                EnableEvents(eventSource, _level);
+                var args = new Dictionary<string, string?>()
+                {
+                    ["FilterAndPayloadSpecs"] =
+                        "Microsoft.AspNetCore/Microsoft.AspNetCore.Hosting.HttpRequestIn.Start@Activity1Start:-" + 
+                            "ActivityId=*Activity.Id;" + 
+                            "ActivityName=*Activity.DisplayName;" + 
+                            "ActivityKind=*Activity.Kind;" +
+                            "ActivityOperationName=*Activity.OperationName;" +
+                            "ParentActivityId=*Activity.ParentId;" +
+                            "Request.Scheme;" +
+                            "Request.Host;" +
+                            "Request.PathBase;" +
+                            "Request.QueryString;" +
+                            "Request.Path;" +
+                            "Request.Method;" +
+                            "Request.Headers.*Enumerate" +
+                        "\n" + 
+                        "Microsoft.AspNetCore/Microsoft.AspNetCore.Hosting.HttpRequestIn.Stop@Activity1Stop:-" +
+                            "ActivityId=*Activity.Id;" +
+                            "Request.Path;" +
+                            "Response.StatusCode;" +
+                            "ActivityDuration=*Activity.Duration.Ticks"
+                };
+
+                EnableEvents(eventSource, _level, EventKeywords.All, args);
             }
         }
 
@@ -70,9 +99,25 @@ namespace FunctionAppDotNet6InProgress
             {
                 foreach (var pl in eventData.Payload)
                 {
+                    //if (pl?.ToString()?.Contains("Microsoft.AspNetCore.Hosting.HttpRequestIn") == true)
                     if (pl?.ToString()?.Contains("Microsoft.AspNetCore.Hosting.HttpRequestIn") == true)
                     {
                         _log?.Invoke(eventData, Format(eventData));
+                        /*
+                        foreach (object[] payloads in eventData.Payload.OfType<object[]>())
+                        {
+                            foreach (object payload in payloads)
+                            {
+                                if (payload is IDictionary<string, object?>)
+                                {
+                                    foreach (var kv in (IDictionary<string, object?>)payload)
+                                    {
+                                        //Console.WriteLine(kv.Key, kv.Value?.GetType().ToString());
+                                    }
+                                }
+                            }
+                        }
+                        */
                         break;
                     }
                 }
@@ -94,8 +139,9 @@ namespace FunctionAppDotNet6InProgress
                 {
                     return string.Format(CultureInfo.InvariantCulture, eventData.Message, payloadArray);
                 }
-                catch (FormatException)
+                catch (FormatException ex)
                 {
+                    throw ex;
                 }
             }
 
